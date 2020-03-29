@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using NzbDrone.Common.Disk;
+using NzbDrone.Core.Indexers;
+using NzbDrone.Core.ThingiProvider;
 
 namespace NzbDrone.Core.Download
 {
-    [DebuggerDisplay("{DownloadClient}:{Title}")]
+    [DebuggerDisplay("{DownloadClientName}:{Title}")]
     public class DownloadClientItem
     {
-        public string DownloadClient { get; set; }
+        public DownloadClientItemClientInfo DownloadClientInfo { get; set; }
         public string DownloadId { get; set; }
         public string Category { get; set; }
         public string Title { get; set; }
@@ -27,5 +29,23 @@ namespace NzbDrone.Core.Download
         public bool CanBeRemoved { get; set; }
 
         public bool Removed { get; set; }
+    }
+
+    public class DownloadClientItemClientInfo
+    {
+        public DownloadProtocol Protocol { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public static DownloadClientItemClientInfo FromDownloadClient<TSettings>(DownloadClientBase<TSettings> downloadClient)
+            where TSettings : IProviderConfig, new()
+        {
+            return new DownloadClientItemClientInfo
+            {
+                Protocol = downloadClient.Protocol,
+                Id = downloadClient.Definition.Id,
+                Name = downloadClient.Definition.Name
+            };
+        }
     }
 }
