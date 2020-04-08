@@ -115,7 +115,7 @@ namespace NzbDrone.Core.MetadataSource.PreDB
 
             foreach (PreDBResult result in results)
             {
-                var parsedInfo = Parser.Parser.ParseMovieTitle(result.Title, true);
+                var parsedInfo = Parser.Parser.ParseMovieTitle(result.Title);
 
                 if (parsedInfo != null)
                 {
@@ -171,7 +171,7 @@ namespace NzbDrone.Core.MetadataSource.PreDB
 
                 foreach (PreDBResult result in results)
                 {
-                    var parsed = Parser.Parser.ParseMovieTitle(result.Title, true);
+                    var parsed = Parser.Parser.ParseMovieTitle(result.Title);
                     if (parsed == null)
                     {
                         parsed = new Parser.Model.ParsedMovieInfo { MovieTitle = result.Title, Year = 0 };
