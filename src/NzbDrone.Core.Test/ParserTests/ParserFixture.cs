@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Execution;
 using NUnit.Framework;
+using NzbDrone.Core.Languages;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
@@ -156,10 +157,21 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Mission Impossible: Rogue Nation 2012 Bluray", "")]
         [TestCase("Loving.Pablo.2018.TS.FRENCH.MD.x264-DROGUERiE", "")]
         [TestCase("Uncut.Gems.2019.720p.BluRay.x264-YOL0W", "")]
+        [TestCase("Directors.Cut.German.2006.COMPLETE.PAL.DVDR-LoD", "")]
         public void should_parse_edition(string postTitle, string edition)
         {
             var parsed = Parser.Parser.ParseMovieTitle(postTitle);
             parsed.Edition.Should().Be(edition);
+        }
+
+        [TestCase("The.Italian.Job.2003.German.DTS.1080p.Bluray.x264-w0rm", 4)] //German
+        [TestCase("Loving.Pablo.2018.TS.FRENCH.MD.x264-DROGUERiE", 2)] //French
+        [TestCase("Der.Film.deines.Lebens.German.2011.PAL.DVDR-ETM", 4)] //German
+        [TestCase("Alice.In.Wonderland.2010.iTALiAN.720p.BluRay.x264-FAVELAS", 5)] //Italian
+        public void should_parse_languages(string postTitle, int language)
+        {
+            var parsed = Parser.Parser.ParseMovieTitle(postTitle);
+            parsed.Languages.Should().Equal((Language)language);
         }
 
         [TestCase("123", "tt0000123")]
