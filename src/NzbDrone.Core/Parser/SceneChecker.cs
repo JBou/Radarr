@@ -6,6 +6,11 @@
         //It's better not to use a title that might be scene than to use one that isn't scene
         public static string GetSceneTitle(string title)
         {
+            if (title == null)
+            {
+                return null;
+            }
+
             if (!title.Contains("."))
             {
                 return null;
