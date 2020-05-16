@@ -353,6 +353,11 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                 return "VC1";
             }
 
+            if (videoFormat.ContainsIgnoreCase("AV1"))
+            {
+                return "AV1";
+            }
+
             if (videoFormat.ContainsIgnoreCase("VP6") || videoFormat.ContainsIgnoreCase("VP7") ||
                 videoFormat.ContainsIgnoreCase("VP8") || videoFormat.ContainsIgnoreCase("VP9"))
             {
@@ -494,10 +499,10 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                     return positions;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Logger.Warn()
-                      .Message("Unable to format audio channels using 'AudioChannelPositions', with a value of: '{0}' and '{1}'", audioChannelPositions, mediaInfo.AudioChannelPositionsText)
+                      .Message("Unable to format audio channels using 'AudioChannelPositions', with a value of: '{0}' and '{1}'. Error {2}", audioChannelPositions, mediaInfo.AudioChannelPositionsText, ex.Message)
                       .WriteSentryWarn("UnknownAudioChannelFormat", audioChannelPositions, mediaInfo.AudioChannelPositionsText)
                       .Write();
             }

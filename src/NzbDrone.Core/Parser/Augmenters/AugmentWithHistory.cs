@@ -23,13 +23,13 @@ namespace NzbDrone.Core.Parser.Augmenters
         {
             get
             {
-                return typeof(History.History);
+                return typeof(MovieHistory);
             }
         }
 
         public ParsedMovieInfo AugmentMovieInfo(ParsedMovieInfo movieInfo, object helper)
         {
-            if (helper is History.History history && history.EventType == HistoryEventType.Grabbed)
+            if (helper is MovieHistory history && history.EventType == MovieHistoryEventType.Grabbed)
             {
                 //First we create a release info from history data.
                 var releaseInfo = new ReleaseInfo();
@@ -40,7 +40,7 @@ namespace NzbDrone.Core.Parser.Augmenters
                     releaseInfo.IndexerId = indexerId;
                 }
 
-                if (int.TryParse(history.Data.GetValueOrDefault("size"), out var size))
+                if (long.TryParse(history.Data.GetValueOrDefault("size"), out var size))
                 {
                     releaseInfo.Size = size;
                 }

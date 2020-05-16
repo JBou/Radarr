@@ -26,7 +26,6 @@ namespace NzbDrone.Core.Movies
         private readonly IAlternativeTitleService _titleService;
         private readonly ICreditService _creditService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly IManageCommandQueue _commandQueueManager;
         private readonly IDiskScanService _diskScanService;
         private readonly ICheckIfMovieShouldBeRefreshed _checkIfMovieShouldBeRefreshed;
         private readonly IConfigService _configService;
@@ -42,7 +41,6 @@ namespace NzbDrone.Core.Movies
                                     IDiskScanService diskScanService,
                                     IRadarrAPIClient apiClient,
                                     ICheckIfMovieShouldBeRefreshed checkIfMovieShouldBeRefreshed,
-                                    IManageCommandQueue commandQueue,
                                     IConfigService configService,
                                     Logger logger)
         {
@@ -52,7 +50,6 @@ namespace NzbDrone.Core.Movies
             _creditService = creditService;
             _eventAggregator = eventAggregator;
             _apiClient = apiClient;
-            _commandQueueManager = commandQueue;
             _diskScanService = diskScanService;
             _checkIfMovieShouldBeRefreshed = checkIfMovieShouldBeRefreshed;
             _configService = configService;
@@ -68,7 +65,7 @@ namespace NzbDrone.Core.Movies
 
             try
             {
-                var tuple = _movieInfo.GetMovieInfo(movie.TmdbId, movie.Profile, movie.HasPreDBEntry);
+                var tuple = _movieInfo.GetMovieInfo(movie.TmdbId, movie.HasPreDBEntry);
                 movieInfo = tuple.Item1;
                 credits = tuple.Item2;
             }
@@ -87,7 +84,7 @@ namespace NzbDrone.Core.Movies
 
             if (movie.TmdbId != movieInfo.TmdbId)
             {
-                _logger.Warn("Movie '{0}' (TmdbId {1}) was replaced with '{2}' (TmdbId {3}), because the original was a duplicate.", movie.Title, movie.TmdbId, movieInfo.Title, movieInfo.TmdbId);
+                _logger.Warn("Movie '{0}' (Tmdbid {1}) was replaced with '{2}' (Tmdbid {3}), because the original was a duplicate.", movie.Title, movie.TmdbId, movieInfo.Title, movieInfo.TmdbId);
                 movie.TmdbId = movieInfo.TmdbId;
             }
 
@@ -134,8 +131,6 @@ namespace NzbDrone.Core.Movies
 
                 movieInfo.AlternativeTitles.AddRange(mappingsTitles);
 
-                movie.AlternativeTitles = _titleService.UpdateTitles(movieInfo.AlternativeTitles, movie);
-
                 if (mappings.Item2 != null)
                 {
                     movie.SecondaryYear = mappings.Item2.Year;
@@ -156,20 +151,10 @@ namespace NzbDrone.Core.Movies
                 _logger.Info(ex, "Unable to communicate with Mappings Server.");
             }
 
+            movie.AlternativeTitles = _titleService.UpdateTitles(movieInfo.AlternativeTitles, movie);
+
             _movieService.UpdateMovie(new List<Movie> { movie }, true);
             _creditService.UpdateCredits(credits, movie);
-
-            try
-            {
-                var newTitles = movieInfo.AlternativeTitles.Except(movie.AlternativeTitles);
-
-                //_titleService.AddAltTitles(newTitles.ToList(), movie);
-            }
-            catch (Exception e)
-            {
-                _logger.Debug(e, "Failed adding alternative titles.");
-                throw;
-            }
 
             _logger.Debug("Finished movie refresh for {0}", movie.Title);
             _eventAggregator.PublishEvent(new MovieUpdatedEvent(movie));

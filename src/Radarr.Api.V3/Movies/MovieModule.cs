@@ -29,13 +29,15 @@ namespace Radarr.Api.V3.Movies
                                 IHandle<MovieRenamedEvent>,
                                 IHandle<MediaCoversUpdatedEvent>
     {
-        protected readonly IMovieService _moviesService;
+        private readonly IMovieService _moviesService;
+        private readonly IAddMovieService _addMovieService;
         private readonly IMapCoversToLocal _coverMapper;
         private readonly IManageCommandQueue _commandQueueManager;
         private readonly IUpgradableSpecification _qualityUpgradableSpecification;
 
         public MovieModule(IBroadcastSignalRMessage signalRBroadcaster,
                             IMovieService moviesService,
+                            IAddMovieService addMovieService,
                             IMapCoversToLocal coverMapper,
                             IManageCommandQueue commandQueueManager,
                             IUpgradableSpecification qualityUpgradableSpecification,
@@ -50,6 +52,7 @@ namespace Radarr.Api.V3.Movies
             : base(signalRBroadcaster)
         {
             _moviesService = moviesService;
+            _addMovieService = addMovieService;
             _qualityUpgradableSpecification = qualityUpgradableSpecification;
             _coverMapper = coverMapper;
             _commandQueueManager = commandQueueManager;
@@ -87,7 +90,17 @@ namespace Radarr.Api.V3.Movies
 
         private List<MovieResource> AllMovie()
         {
-            var moviesResources = _moviesService.GetAllMovies().ToResource(_qualityUpgradableSpecification);
+            var tmdbId = Request.GetIntegerQueryParameter("tmdbId");
+            var moviesResources = new List<MovieResource>();
+
+            if (tmdbId > 0)
+            {
+                moviesResources.AddIfNotNull(_moviesService.FindByTmdbId(tmdbId).ToResource(_qualityUpgradableSpecification));
+            }
+            else
+            {
+                moviesResources.AddRange(_moviesService.GetAllMovies().ToResource(_qualityUpgradableSpecification));
+            }
 
             MapCoversToLocal(moviesResources.ToArray());
             PopulateAlternateTitles(moviesResources);
@@ -116,7 +129,7 @@ namespace Radarr.Api.V3.Movies
 
         private int AddMovie(MovieResource moviesResource)
         {
-            var movie = _moviesService.AddMovie(moviesResource.ToModel());
+            var movie = _addMovieService.AddMovie(moviesResource.ToModel());
 
             return movie.Id;
         }

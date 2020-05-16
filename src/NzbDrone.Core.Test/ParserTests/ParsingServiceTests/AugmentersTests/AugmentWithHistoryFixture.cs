@@ -54,7 +54,7 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests.AugmentersTests
             });
         }
 
-        private History.History HistoryWithData(params string[] data)
+        private MovieHistory HistoryWithData(params string[] data)
         {
             var dict = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             for (var i = 0; i < data.Length; i += 2)
@@ -62,10 +62,10 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests.AugmentersTests
                 dict.Add(data[i], data[i + 1]);
             }
 
-            return new History.History
+            return new MovieHistory
             {
                 Data = dict,
-                EventType = HistoryEventType.Grabbed
+                EventType = MovieHistoryEventType.Grabbed
             };
         }
 
@@ -80,9 +80,9 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests.AugmentersTests
         [Test]
         public void should_add_size()
         {
-            var history = HistoryWithData("Size", 1500.ToString());
+            var history = HistoryWithData("Size", 9663676416.ToString());
             var movieInfo = Subject.AugmentMovieInfo(MovieInfo, history);
-            movieInfo.ExtraInfo["Size"].Should().BeEquivalentTo(1500);
+            movieInfo.ExtraInfo["Size"].Should().BeEquivalentTo(9663676416);
         }
 
         [Test]

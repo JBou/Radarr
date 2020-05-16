@@ -76,6 +76,29 @@ namespace NzbDrone.Mono.Disk
             SetOwner(path, user, group);
         }
 
+        public override void CopyPermissions(string sourcePath, string targetPath, bool includeOwner)
+        {
+            try
+            {
+                Syscall.stat(sourcePath, out var srcStat);
+                Syscall.stat(targetPath, out var tgtStat);
+
+                if (srcStat.st_mode != tgtStat.st_mode)
+                {
+                    Syscall.chmod(targetPath, srcStat.st_mode);
+                }
+
+                if (includeOwner && (srcStat.st_uid != tgtStat.st_uid || srcStat.st_gid != tgtStat.st_gid))
+                {
+                    Syscall.chown(targetPath, srcStat.st_uid, srcStat.st_gid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to copy permissions from {0} to {1}", sourcePath, targetPath);
+            }
+        }
+
         protected override List<IMount> GetAllMounts()
         {
             return _procMountProvider.GetMounts()
@@ -156,7 +179,7 @@ namespace NzbDrone.Mono.Disk
             }
         }
 
-        protected override void MoveFileInternal(string source, string destination, bool overwrite)
+        protected override void MoveFileInternal(string source, string destination)
         {
             var sourceInfo = UnixFileSystemInfo.GetFileSystemEntry(source);
 
@@ -194,11 +217,11 @@ namespace NzbDrone.Mono.Disk
             else if ((PlatformInfo.Platform == PlatformType.Mono && PlatformInfo.GetVersion() >= new Version(6, 0)) ||
                      PlatformInfo.Platform == PlatformType.NetCore)
             {
-                TransferFilePatched(source, destination, overwrite, true);
+                TransferFilePatched(source, destination, false, true);
             }
             else
             {
-                base.MoveFileInternal(source, destination, overwrite);
+                base.MoveFileInternal(source, destination);
             }
         }
 
@@ -208,15 +231,30 @@ namespace NzbDrone.Mono.Disk
             // - In 6.0 it'll leave a full length file
             // - In 6.6 it'll leave a zero length file
             // Catch the exception and attempt to handle these edgecases
+
+            // Mono 6.x till 6.10 doesn't properly try use rename first.
+            if (move &&
+                ((PlatformInfo.Platform == PlatformType.Mono && PlatformInfo.GetVersion() < new Version(6, 10)) ||
+                 (PlatformInfo.Platform == PlatformType.NetCore)))
+            {
+                if (Syscall.lstat(source, out var sourcestat) == 0 &&
+                    Syscall.lstat(destination, out var deststat) != 0 &&
+                    Syscall.rename(source, destination) == 0)
+                {
+                    _logger.Trace("Moved '{0}' -> '{1}' using Syscall.rename", source, destination);
+                    return;
+                }
+            }
+
             try
             {
                 if (move)
                 {
-                    base.MoveFileInternal(source, destination, overwrite);
+                    base.MoveFileInternal(source, destination);
                 }
                 else
                 {
-                    base.CopyFileInternal(source, destination, overwrite);
+                    base.CopyFileInternal(source, destination);
                 }
             }
             catch (UnauthorizedAccessException)
