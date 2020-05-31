@@ -117,7 +117,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     }
 
                     movieFile.OriginalFilePath = GetOriginalFilePath(downloadClientItem, localMovie);
-                    movieFile.SceneName = GetSceneName(downloadClientItem, localMovie);
+                    movieFile.SceneName = GetSceneName(downloadClientItem, localMovie, qualifiedImports.Count > 0);
                     if (newDownload)
                     {
                         var moveResult = _movieFileUpgrader.UpgradeMovieFile(movieFile, localMovie, copyOnly); //TODO: Check if this works
@@ -207,14 +207,24 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
             return Path.Combine(Path.GetFileName(parentPath), Path.GetFileName(path));
         }
 
-        private string GetSceneName(DownloadClientItem downloadClientItem, LocalMovie localMovie)
+        private string GetSceneName(DownloadClientItem downloadClientItem, LocalMovie localMovie, bool multipleApprovedImports)
         {
-            if (downloadClientItem != null)
+            //if there are multiple approved imports for one downloadClientItem, it may be a collection, check folder and filename first then
+            if (downloadClientItem != null && !multipleApprovedImports)
             {
-                var sceneNameTitle = SceneChecker.GetSceneTitle(downloadClientItem.Title);
-                if (sceneNameTitle != null)
+                var sceneName = SceneChecker.GetSceneTitle(downloadClientItem.Title);
+                if (sceneName != null)
                 {
-                    return sceneNameTitle;
+                    return sceneName;
+                }
+            }
+
+            if (localMovie.FolderMovieInfo != null)
+            {
+                var sceneName = SceneChecker.GetSceneTitle(localMovie.FolderMovieInfo.ReleaseTitle ?? localMovie.FolderMovieInfo.OriginalTitle);
+                if (sceneName != null)
+                {
+                    return sceneName;
                 }
             }
 
@@ -223,6 +233,15 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
             if (sceneNameFile != null)
             {
                 return sceneNameFile;
+            }
+
+            if (downloadClientItem != null)
+            {
+                var sceneNameTitle = SceneChecker.GetSceneTitle(downloadClientItem.Title);
+                if (sceneNameTitle != null)
+                {
+                    return sceneNameTitle;
+                }
             }
 
             return null;

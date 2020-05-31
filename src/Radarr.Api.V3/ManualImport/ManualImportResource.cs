@@ -40,7 +40,7 @@ namespace Radarr.Api.V3.ManualImport
                 Path = model.Path,
                 RelativePath = model.RelativePath,
 
-                // FolderName = model.FolderName,
+                FolderName = model.FolderName,
                 Name = model.Name,
                 Size = model.Size,
                 Movie = model.Movie.ToResource(),

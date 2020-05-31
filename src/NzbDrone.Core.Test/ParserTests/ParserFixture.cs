@@ -80,6 +80,7 @@ namespace NzbDrone.Core.Test.ParserTests
         //Special cases (see description)
         [TestCase("Die.Klasse.von.1999.1990.German.720p.HDTV.x264-NORETAiL", "Die Klasse von 1999", "", 1990, Description = "year in the title")]
         [TestCase("Suicide.Squad.2016.EXTENDED.German.DL.AC3.BDRip.x264-hqc", "Suicide Squad", "EXTENDED", 2016, Description = "edition after year")]
+        [TestCase("Terminator.2.Tag.der.Abrechnung.1991.Extended.REMASTERED.German.720p.BluRay.x264.REPACK-LizardSquad", "Terminator 2 Tag der Abrechnung", "Extended REMASTERED", 1991, Description = "edition after year")]
         [TestCase("Knight.and.Day.2010.Extended.Cut.German.DTS.DL.720p.BluRay.x264-HDS", "Knight and Day", "Extended Cut", 2010, Description = "edition after year")]
         [TestCase("Der.Soldat.James.German.Bluray.FuckYou.Pso.Why.cant.you.follow.scene.rules.1998", "Der Soldat James", "", 1998, Description = "year at the end")]
         [TestCase("Der.Hobbit.Eine.Unerwartete.Reise.Extended.German.720p.BluRay.x264-EXQUiSiTE", "Der Hobbit Eine Unerwartete Reise", "Extended", 0, Description = "no year & edition")]
@@ -91,7 +92,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Cars.2.German.DL.720p.BluRay.x264-EmpireHD", "Cars 2", "", 0, Description = "no year")]
         [TestCase("Die.fantastische.Reise.des.Dr.Dolittle.2020.German.DL.LD.1080p.WEBRip.x264-PRD", "Die fantastische Reise des Dr. Dolittle", "", 2020, Description = "dot after dr")]
         [TestCase("Der.Film.deines.Lebens.German.2011.PAL.DVDR-ETM", "Der Film deines Lebens", "", 2011, Description = "year at wrong position")]
+        [TestCase("Toy.Story.German.1995.720p.BluRay.x264-DEFUSED", "Toy Story", "", 1995, Description = "year at wrong position")]
         [TestCase("Kick.Ass.2.2013.German.DTS.DL.720p.BluRay.x264-Pate_", "Kick Ass 2", "", 2013, Description = "underscore at the end")]
+        [TestCase("X-Men.Zukunft.ist.Vergangenheit.ROGUE.CUT.2014.German.720p.BluRay.x264-EXQUiSiTE", "X-Men Zukunft ist Vergangenheit", "ROGUE CUT", 2014, Description = "rogue cut")]
         public void should_parse_german_movie(string postTitle, string title, string edition, int year)
         {
             ParsedMovieInfo movie = Parser.Parser.ParseMovieTitle(postTitle);
