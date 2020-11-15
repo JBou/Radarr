@@ -33,6 +33,9 @@ namespace NzbDrone.Common.Test.InstrumentationTests
         [TestCase(@"""servers"":[{""username"":""mySecret"",""password"":""mySecret""}]")]
         [TestCase(@"""misc"":{""email_account"":""mySecret"",""email_to"":[],""email_from"":"""",""email_pwd"":""mySecret""}")]
 
+        // Nzb password
+        [TestCase(@"{""slots"":[{""nzb_name"":""The.Movie.2020.720p.BluRay.x264-RlsGrp{{mySecret}}"",""url"":""The.Movie.2020.720p.BluRay.x264-RlsGrp{{mySecret}}.nzb""}]}")]
+
         // uTorrent
         [TestCase(@"http://localhost:9091/gui/?token=wThmph5l0ZXfH-a6WOA4lqiLvyjCP0FpMrMeXmySecret_VXBO11HoKL751MAAAAA&list=1")]
         [TestCase(@",[""boss_key"",0,""mySecret"",{""access"":""Y""}],[""boss_key_salt"",0,""mySecret"",{""access"":""W""}]")]

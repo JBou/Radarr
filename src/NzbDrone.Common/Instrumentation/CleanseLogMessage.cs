@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -29,6 +29,9 @@ namespace NzbDrone.Common.Instrumentation
                 // Sabnzbd
                 new Regex(@"""[^""]*(username|password|api_?key|nzb_key)""\s*:\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
                 new Regex(@"""email_(account|to|from|pwd)""\s*:\s*""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
+
+                // Nzb password
+                new Regex(@"""[^""]*(nzb_name|url)""\s*:\s*""[^""{}]+?({{)(?<secret>[^""{}]+?)(}}).*?""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
 
                 // uTorrent
                 new Regex(@"\[""[a-z._]*(username|password)"",\d,""(?<secret>[^""]+?)""", RegexOptions.Compiled | RegexOptions.IgnoreCase),
